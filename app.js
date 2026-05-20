@@ -519,16 +519,11 @@ function renderActiveIndicator() {
 function renderRudrakshBead(size, seed, isCenter) {
   const rotation = ((seed * 23) % 32) - 16;
   return `
-    <img
+    <span
       class="rudraksh-bead-img ${isCenter ? "is-center" : ""}"
-      src="${RUDRAKSHA_BEAD_SRC}"
-      width="${size}"
-      height="${size}"
-      alt=""
       aria-hidden="true"
-      draggable="false"
-      style="transform:rotate(${rotation}deg)"
-    />
+      style="--bead-image:url('${RUDRAKSHA_BEAD_SRC}'); --bead-rotation:${rotation}deg"
+    ></span>
   `;
 }
 

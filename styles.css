@@ -1395,7 +1395,19 @@ svg {
 }
 
 .rudraksh-bead-img {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 211, 153, 0.52), rgba(255, 211, 153, 0) 32%),
+    radial-gradient(circle at 50% 58%, #a94917 0%, #74300f 54%, #301207 100%);
+  background-image:
+    radial-gradient(circle at 34% 24%, rgba(255, 211, 153, 0.52), rgba(255, 211, 153, 0) 32%),
+    radial-gradient(circle at 50% 58%, rgba(169, 73, 23, 0.88) 0%, rgba(116, 48, 15, 0.72) 54%, rgba(48, 18, 7, 0.9) 100%),
+    var(--bead-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover, cover, contain;
   object-fit: contain;
+  transform: rotate(var(--bead-rotation, 0deg));
   transform-origin: 50% 50%;
   user-select: none;
   pointer-events: none;
