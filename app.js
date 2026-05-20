@@ -70,6 +70,7 @@ const audioEngine = {
 
 let gestureStartY = null;
 let celebrateTimer = null;
+let ignoreClickTimer = null;
 
 render();
 
@@ -78,6 +79,7 @@ app.addEventListener("click", (event) => {
   if (gestureZone) {
     if (state.ignoreNextGestureClick) {
       state.ignoreNextGestureClick = false;
+      window.clearTimeout(ignoreClickTimer);
       return;
     }
     handleAction("increment-jaap");
@@ -144,12 +146,16 @@ app.addEventListener("pointerup", (event) => {
     return;
   }
 
-  const movedUp = gestureStartY - event.clientY;
+  const movedDown = event.clientY - gestureStartY;
   gestureStartY = null;
-  if (movedUp >= 24) {
-    state.ignoreNextGestureClick = true;
+  if (movedDown >= 24) {
+    ignoreNextGestureClick();
     handleAction("increment-jaap");
   }
+});
+
+app.addEventListener("pointercancel", () => {
+  gestureStartY = null;
 });
 
 function handleAction(action) {
@@ -301,6 +307,14 @@ function triggerHaptic(type) {
   } catch {
     // Haptics are best-effort; unsupported browsers should keep the jaap flow silent.
   }
+}
+
+function ignoreNextGestureClick() {
+  state.ignoreNextGestureClick = true;
+  window.clearTimeout(ignoreClickTimer);
+  ignoreClickTimer = window.setTimeout(() => {
+    state.ignoreNextGestureClick = false;
+  }, 350);
 }
 
 function render() {
@@ -456,7 +470,7 @@ function renderSession() {
       </section>
 
       <section class="jaap-bottom-help">
-        <p>Drag the mala upward with your thumb. Each bead = one chant.</p>
+        <p>Pull the mala downward with your thumb. Each bead = one chant.</p>
         <button type="button" data-action="reset-jaap">↺ Reset round</button>
       </section>
 
@@ -469,7 +483,7 @@ function renderSession() {
       </section>
 
       <div class="jaap-gesture-zone" data-gesture-zone>
-        ${state.count === 0 ? "<span>SWIPE ↑</span>" : ""}
+        ${state.count === 0 ? "<span>SWIPE ↓</span>" : ""}
       </div>
 
       ${state.showCelebrate ? renderCelebration() : ""}
