@@ -1,10 +1,14 @@
 const app = document.querySelector("#jaap-app");
 
-const JAAP_SOUND_SRC = "assets/jaap-sound.mp3";
+const JAAP_SOUND_SRC = "assets/wind-of-harmony.mp3";
 const RUDRAKSHA_BEAD_SRC = "assets/rudraksha-bead.png";
+const GHOST_MANTRA_TEXT =
+  "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् । उर्वारुकमिव बन्धनान्मृत्योर्मुक्षीय मामृतात् ॥";
 const VISIBLE_BEADS = 13;
+const HORIZONTAL_VISIBLE_BEADS = 9;
 const STORAGE_PREFIX = "hiastro:jaap:";
 const MUTED_KEY = "hiastro:jaap:muted";
+const LAYOUT_KEY = "hiastro:jaap:layout";
 const STALE_COUNT_MS = 24 * 60 * 60 * 1000;
 const HAPTIC_PATTERNS = {
   selection: 6,
@@ -35,8 +39,8 @@ const mantras = [
 const musicTracks = [
   {
     id: "jaap-sound",
-    name: "Jaap Ambient",
-    duration: "loop",
+    name: "Wind of Harmony",
+    duration: "Palace on Wheels",
     cover: "assets/krishna-flute.png",
   },
 ];
@@ -47,6 +51,7 @@ const state = {
   screen: "launch",
   selectedMantraId: "om-namah-shivaya",
   selectedMusicId: "jaap-sound",
+  layout: readLayout(),
   target: 108,
   customCount: "",
   customOpen: false,
@@ -68,27 +73,26 @@ const audioEngine = {
   element: null,
 };
 
-let gestureStartY = null;
+let gestureStart = null;
 let celebrateTimer = null;
 let ignoreClickTimer = null;
 
 render();
 
 app.addEventListener("click", (event) => {
-  const gestureZone = event.target.closest("[data-gesture-zone]");
-  if (gestureZone) {
-    if (state.ignoreNextGestureClick) {
-      state.ignoreNextGestureClick = false;
-      window.clearTimeout(ignoreClickTimer);
-      return;
-    }
-    handleAction("increment-jaap");
-    return;
-  }
-
   const action = event.target.closest("[data-action]");
   const targetButton = event.target.closest("[data-target]");
   const option = event.target.closest("[data-option]");
+  const layoutButton = event.target.closest("[data-layout]");
+  const gestureZone = event.target.closest("[data-gesture-zone]");
+
+  if (layoutButton) {
+    triggerHaptic("selection");
+    state.layout = layoutButton.dataset.layout === "horizontal" ? "horizontal" : "vertical";
+    writeLayout(state.layout);
+    render();
+    return;
+  }
 
   if (targetButton) {
     triggerHaptic("selection");
@@ -109,8 +113,19 @@ app.addEventListener("click", (event) => {
     return;
   }
 
-  if (!action) return;
-  handleAction(action.dataset.action);
+  if (action) {
+    handleAction(action.dataset.action);
+    return;
+  }
+
+  if (gestureZone) {
+    if (state.ignoreNextGestureClick) {
+      state.ignoreNextGestureClick = false;
+      window.clearTimeout(ignoreClickTimer);
+      return;
+    }
+    handleAction("increment-jaap");
+  }
 });
 
 app.addEventListener("submit", (event) => {
@@ -137,25 +152,30 @@ app.addEventListener("input", (event) => {
 
 app.addEventListener("pointerdown", (event) => {
   if (!event.target.closest("[data-gesture-zone]")) return;
-  gestureStartY = event.clientY;
+  gestureStart = {
+    x: event.clientX,
+    y: event.clientY,
+  };
 });
 
 app.addEventListener("pointerup", (event) => {
-  if (gestureStartY === null || !event.target.closest("[data-gesture-zone]")) {
-    gestureStartY = null;
+  if (gestureStart === null || !event.target.closest("[data-gesture-zone]")) {
+    gestureStart = null;
     return;
   }
 
-  const movedDown = event.clientY - gestureStartY;
-  gestureStartY = null;
-  if (movedDown >= 24) {
+  const movedDown = event.clientY - gestureStart.y;
+  const movedLeft = gestureStart.x - event.clientX;
+  const didMalaGesture = state.layout === "horizontal" ? movedLeft >= 24 : movedDown >= 24;
+  gestureStart = null;
+  if (didMalaGesture) {
     ignoreNextGestureClick();
     handleAction("increment-jaap");
   }
 });
 
 app.addEventListener("pointercancel", () => {
-  gestureStartY = null;
+  gestureStart = null;
 });
 
 function handleAction(action) {
@@ -407,6 +427,11 @@ function renderLaunch() {
         ${state.customOpen ? renderCustomForm() : renderCustomButton()}
       </section>
 
+      <section class="layout-section" aria-labelledby="layout-heading">
+        <h3 id="layout-heading">Mala version</h3>
+        ${renderLayoutToggle("setup")}
+      </section>
+
       <button class="select-card music-card" type="button" disabled>
         ${renderAlbumArt(music)}
         <span class="select-copy">
@@ -425,11 +450,19 @@ function renderLaunch() {
 }
 
 function renderSession() {
+  if (state.layout === "horizontal") {
+    return renderHorizontalSession();
+  }
+
+  return renderVerticalSession();
+}
+
+function renderVerticalSession() {
   const mantra = getSelectedMantra();
   const progress = (state.count / state.target) * 100;
 
   return `
-    <main class="jaap-fullscreen">
+    <main class="jaap-fullscreen jaap-session-vertical">
       <div class="jaap-bg"></div>
       <button class="jaap-top-button jaap-close" type="button" data-action="back-launch" aria-label="Close Jaap">
         ${renderIcon("close")}
@@ -444,12 +477,15 @@ function renderSession() {
       </button>
 
       <div class="jaap-brand" aria-hidden="true"><span>Hi</span>Astro</div>
+      ${renderLayoutToggle("session")}
 
       <section class="jaap-mantra-block">
         <span>TODAY'S MANTRA</span>
         <h2>${escapeHtml(mantra.name)}</h2>
         <i></i>
       </section>
+
+      <p class="jaap-ghost-mantra" aria-hidden="true">${GHOST_MANTRA_TEXT}</p>
 
       <section class="jaap-count-block" aria-live="polite">
         <span>COUNT</span>
@@ -491,6 +527,73 @@ function renderSession() {
   `;
 }
 
+function renderHorizontalSession() {
+  const mantra = getSelectedMantra();
+  const music = getSelectedMusic();
+  const progress = (state.count / state.target) * 100;
+
+  return `
+    <main class="jaap-fullscreen jaap-session-horizontal">
+      <button class="jaap-top-button jaap-close" type="button" data-action="back-launch" aria-label="Close Jaap">
+        ${renderIcon("close")}
+      </button>
+      <button
+        class="jaap-top-button jaap-mute"
+        type="button"
+        data-action="toggle-mute"
+        aria-label="${state.muted ? "Unmute background sound" : "Mute background sound"}"
+      >
+        ${renderIcon(state.muted ? "speakerOff" : "speaker")}
+      </button>
+
+      <div class="jaap-brand" aria-hidden="true"><span>Hi</span>Astro</div>
+      ${renderLayoutToggle("session")}
+
+      <section class="jaap-horizontal-mantra">
+        <span>TODAY'S MANTRA</span>
+        <h2>${escapeHtml(mantra.name)}</h2>
+        <button type="button" data-action="open-mantra">Change ›</button>
+        <p aria-hidden="true">${GHOST_MANTRA_TEXT}</p>
+      </section>
+
+      <section class="jaap-horizontal-music">
+        ${renderAlbumArt(music)}
+        <div>
+          <strong>${escapeHtml(music.name)}</strong>
+          <button type="button" data-action="toggle-mute" aria-label="${state.muted ? "Unmute background sound" : "Mute background sound"}">
+            ${state.muted ? "▶" : "Ⅱ"}
+          </button>
+          <small>Change ›</small>
+          <span class="jaap-music-progress"><i style="width:32%"></i></span>
+          <em>3:58 <b>/ 12:30</b></em>
+        </div>
+      </section>
+
+      <section class="jaap-horizontal-mala-layer" aria-label="Jaap mala counter">
+        ${renderHorizontalActiveIndicator()}
+        ${renderHorizontalBeadArc()}
+      </section>
+
+      <section class="jaap-horizontal-count" aria-live="polite">
+        <div class="jaap-horizontal-arc" aria-hidden="true"></div>
+        <strong class="jaap-count-number">${String(state.count).padStart(2, "0")}</strong>
+        <div class="jaap-horizontal-targets">
+          ${targets.map((target) => renderTargetChip(target)).join("")}
+        </div>
+        <p>Jaap Cycle : <b>${String(state.malas).padStart(2, "0")}</b></p>
+      </section>
+
+      <button class="jaap-finish-later" type="button" data-action="back-launch">I'll finish later</button>
+
+      <div class="jaap-gesture-zone is-horizontal" data-gesture-zone>
+        ${state.count === 0 ? "<span>SWIPE ←</span>" : ""}
+      </div>
+
+      ${state.showCelebrate ? renderCelebration() : ""}
+    </main>
+  `;
+}
+
 function renderBeadArc() {
   const positions = Array.from({ length: VISIBLE_BEADS + 2 }, (_, rawIndex) => {
     const slot = rawIndex - 1;
@@ -520,6 +623,34 @@ function renderBeadArc() {
     .join("");
 }
 
+function renderHorizontalBeadArc() {
+  const positions = Array.from({ length: HORIZONTAL_VISIBLE_BEADS + 2 }, (_, rawIndex) => {
+    const slot = rawIndex - 1;
+    return { slot, ...horizontalSlotPosition(slot) };
+  });
+
+  return positions
+    .map(({ slot, x, y }) => {
+      const centerSlot = Math.floor(HORIZONTAL_VISIBLE_BEADS / 2);
+      const isCenter = slot === centerSlot;
+      let opacity = 1;
+      if (slot === -1 || slot === HORIZONTAL_VISIBLE_BEADS) opacity = 0.35;
+      else if (slot === 0 || slot === HORIZONTAL_VISIBLE_BEADS - 1) opacity = 0.62;
+
+      const seed = positiveModulo(state.passingIdx + slot, 17);
+      const size = isCenter ? 82 : 68;
+      return `
+        <span
+          class="jaap-bead-slot jaap-horizontal-bead ${isCenter ? "is-center" : ""}"
+          style="left:${x - size / 2}px; top:${y - size / 2}px; width:${size}px; height:${size}px; opacity:${opacity}"
+        >
+          ${renderRudrakshBead(size, seed, isCenter)}
+        </span>
+      `;
+    })
+    .join("");
+}
+
 function renderActiveIndicator() {
   const centerSlot = Math.floor(VISIBLE_BEADS / 2);
   const pos = slotPosition(centerSlot);
@@ -527,6 +658,16 @@ function renderActiveIndicator() {
   return `
     <span class="jaap-active-ring" style="left:${pos.x - size / 2}px; top:${pos.y - size / 2}px; width:${size}px; height:${size}px"></span>
     <span class="jaap-pulse-ring" style="left:${pos.x - size / 2}px; top:${pos.y - size / 2}px; width:${size}px; height:${size}px"></span>
+  `;
+}
+
+function renderHorizontalActiveIndicator() {
+  const centerSlot = Math.floor(HORIZONTAL_VISIBLE_BEADS / 2);
+  const pos = horizontalSlotPosition(centerSlot);
+  const size = 104;
+  return `
+    <span class="jaap-active-ring jaap-horizontal-ring" style="left:${pos.x - size / 2}px; top:${pos.y - size / 2}px; width:${size}px; height:${size}px"></span>
+    <span class="jaap-pulse-ring jaap-horizontal-ring" style="left:${pos.x - size / 2}px; top:${pos.y - size / 2}px; width:${size}px; height:${size}px"></span>
   `;
 }
 
@@ -538,6 +679,31 @@ function renderRudrakshBead(size, seed, isCenter) {
       aria-hidden="true"
       style="--bead-image:url('${RUDRAKSHA_BEAD_SRC}'); --bead-rotation:${rotation}deg"
     ></span>
+  `;
+}
+
+function renderLayoutToggle(context) {
+  const variants = [
+    ["horizontal", "Swipe left", "Bottom mala"],
+    ["vertical", "Swipe down", "Right mala"],
+  ];
+
+  return `
+    <div class="layout-toggle layout-toggle-${context}" role="group" aria-label="Choose jaap version">
+      ${variants
+        .map(([layout, label, helper]) => `
+          <button
+            class="${state.layout === layout ? "is-active" : ""}"
+            type="button"
+            data-layout="${layout}"
+            aria-pressed="${state.layout === layout}"
+          >
+            <span>${escapeHtml(label)}</span>
+            <small>${escapeHtml(helper)}</small>
+          </button>
+        `)
+        .join("")}
+    </div>
   `;
 }
 
@@ -597,6 +763,15 @@ function slotPosition(slot) {
   return {
     x: cx + Math.sin(angle) * radius,
     y: cy - Math.cos(angle) * radius,
+  };
+}
+
+function horizontalSlotPosition(slot) {
+  const centerSlot = Math.floor(HORIZONTAL_VISIBLE_BEADS / 2);
+  const offset = slot - centerSlot;
+  return {
+    x: 195 + offset * 68,
+    y: 492 + Math.pow(Math.abs(offset), 1.35) * 12,
   };
 }
 
@@ -807,6 +982,22 @@ function readMuted() {
 function writeMuted(muted) {
   try {
     window.localStorage.setItem(MUTED_KEY, muted ? "true" : "false");
+  } catch {
+    // Local storage can be unavailable in private contexts.
+  }
+}
+
+function readLayout() {
+  try {
+    return window.localStorage.getItem(LAYOUT_KEY) === "horizontal" ? "horizontal" : "vertical";
+  } catch {
+    return "vertical";
+  }
+}
+
+function writeLayout(layout) {
+  try {
+    window.localStorage.setItem(LAYOUT_KEY, layout);
   } catch {
     // Local storage can be unavailable in private contexts.
   }

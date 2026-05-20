@@ -245,6 +245,7 @@ button:not(:disabled) {
 
 .select-card:focus-visible,
 .target-chip:focus-visible,
+.layout-toggle button:focus-visible,
 .custom-row:focus-visible,
 .start-button:focus-visible,
 .secondary-button:focus-visible,
@@ -270,7 +271,8 @@ button:not(:disabled) {
 }
 
 .field-label,
-.target-section h3 {
+.target-section h3,
+.layout-section h3 {
   margin: 0;
   color: var(--text-muted);
   font-size: 12px;
@@ -299,6 +301,52 @@ button:not(:disabled) {
   display: grid;
   gap: 10px;
   padding-top: 4px;
+}
+
+.layout-section {
+  display: grid;
+  gap: 10px;
+}
+
+.layout-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.layout-toggle button {
+  display: grid;
+  min-height: 54px;
+  align-content: center;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #4b5565;
+  text-align: left;
+}
+
+.layout-toggle button span {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.layout-toggle button small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.layout-toggle button.is-active {
+  border-color: var(--orange);
+  background: var(--orange-soft);
+}
+
+.layout-toggle button.is-active span,
+.layout-toggle button.is-active small {
+  color: var(--orange);
 }
 
 .chip-row {
@@ -1220,6 +1268,54 @@ svg {
   color: rgba(255, 255, 255, 0.92);
 }
 
+.layout-toggle-session {
+  position: absolute;
+  z-index: 30;
+  top: 72px;
+  left: 50%;
+  width: 174px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateX(-50%);
+}
+
+.layout-toggle-session button {
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.layout-toggle-session button span {
+  color: inherit;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.layout-toggle-session button small {
+  display: none;
+}
+
+.layout-toggle-session button.is-active {
+  background: rgba(255, 127, 9, 0.92);
+  color: #ffffff;
+}
+
+.layout-toggle-session button.is-active span {
+  color: #ffffff;
+}
+
+.jaap-session-vertical .jaap-mantra-block {
+  top: 122px;
+}
+
 .jaap-mantra-block {
   position: absolute;
   z-index: 10;
@@ -1252,6 +1348,21 @@ svg {
   height: 1px;
   margin-top: 14px;
   background: rgba(246, 98, 0, 0.7);
+}
+
+.jaap-ghost-mantra {
+  position: absolute;
+  z-index: 6;
+  top: 254px;
+  right: 118px;
+  left: 24px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.14);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.7;
+  pointer-events: none;
+  user-select: none;
 }
 
 .jaap-count-block {
@@ -1455,6 +1566,277 @@ svg {
   animation: swipeHint 2s ease-in-out infinite;
 }
 
+.jaap-session-horizontal {
+  overflow: hidden;
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.jaap-session-horizontal .jaap-top-button {
+  border-color: rgba(18, 25, 38, 0.1);
+  background: rgba(248, 250, 252, 0.92);
+  color: #364152;
+}
+
+.jaap-session-horizontal .jaap-brand span {
+  color: var(--text-primary);
+}
+
+.jaap-session-horizontal .layout-toggle-session {
+  border-color: #e3e8ef;
+  background: #f6f8fb;
+}
+
+.jaap-session-horizontal .layout-toggle-session button {
+  color: #697586;
+}
+
+.jaap-session-horizontal .layout-toggle-session button.is-active {
+  background: var(--orange);
+  color: #ffffff;
+}
+
+.jaap-horizontal-mantra {
+  position: absolute;
+  z-index: 10;
+  top: 112px;
+  left: 24px;
+  right: 24px;
+}
+
+.jaap-horizontal-mantra span {
+  display: block;
+  margin-bottom: 10px;
+  color: #9aa4b2;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+}
+
+.jaap-horizontal-mantra h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 24px;
+  font-weight: 760;
+  line-height: 30px;
+}
+
+.jaap-horizontal-mantra button {
+  margin-top: 4px;
+  padding: 0;
+  background: transparent;
+  color: #98a2b3;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.jaap-horizontal-mantra p {
+  width: min(100%, 340px);
+  margin: 190px auto 0;
+  color: rgba(105, 117, 134, 0.42);
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.jaap-horizontal-music {
+  position: absolute;
+  z-index: 12;
+  top: 250px;
+  left: 50%;
+  display: grid;
+  width: 190px;
+  justify-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.jaap-horizontal-music .album-art {
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 10px 24px rgba(18, 25, 38, 0.13);
+}
+
+.jaap-horizontal-music strong {
+  display: inline-block;
+  color: #121926;
+  font-size: 17px;
+  font-weight: 760;
+}
+
+.jaap-horizontal-music button {
+  width: 24px;
+  height: 24px;
+  margin-left: 5px;
+  border: 1px solid var(--orange);
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--orange);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.jaap-horizontal-music small {
+  display: block;
+  margin-top: 2px;
+  color: #98a2b3;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.jaap-music-progress {
+  display: block;
+  width: 180px;
+  height: 3px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e3e8ef;
+}
+
+.jaap-music-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--orange);
+}
+
+.jaap-horizontal-music em {
+  display: block;
+  margin-top: 8px;
+  color: #121926;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.jaap-horizontal-music em b {
+  color: #98a2b3;
+  font-weight: inherit;
+}
+
+.jaap-horizontal-mala-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.jaap-horizontal-mala-layer::before {
+  position: absolute;
+  right: -38px;
+  bottom: 275px;
+  left: -38px;
+  height: 88px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff 72%);
+  content: "";
+}
+
+.jaap-horizontal-bead .rudraksh-bead-img {
+  filter: drop-shadow(0 18px 24px rgba(116, 48, 15, 0.28));
+}
+
+.jaap-horizontal-ring {
+  z-index: 2;
+  border-color: rgba(255, 127, 9, 0.52);
+}
+
+.jaap-horizontal-count {
+  position: absolute;
+  z-index: 11;
+  right: 0;
+  bottom: auto;
+  left: 0;
+  top: 540px;
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.jaap-horizontal-arc {
+  position: absolute;
+  z-index: -1;
+  top: -40px;
+  left: 50%;
+  width: 520px;
+  height: 210px;
+  border: 2px solid rgba(255, 127, 9, 0.1);
+  border-radius: 50% 50% 0 0;
+  border-bottom: 0;
+  transform: translateX(-50%);
+}
+
+.jaap-horizontal-count .jaap-count-number {
+  color: var(--orange);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 70px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.jaap-horizontal-targets {
+  display: flex;
+  width: min(316px, calc(100% - 48px));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.jaap-horizontal-targets .target-chip {
+  min-height: 30px;
+  flex: 1 1 0;
+  background: #ffffff;
+}
+
+.jaap-horizontal-count p {
+  margin: 10px 0 0;
+  color: #4b5565;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.jaap-horizontal-count p b {
+  color: #121926;
+  font-size: 18px;
+}
+
+.jaap-finish-later {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  bottom: 4px;
+  left: 0;
+  width: max-content;
+  margin: 0 auto;
+  background: transparent;
+  color: #697586;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.jaap-gesture-zone {
+  touch-action: none;
+}
+
+.jaap-gesture-zone.is-horizontal {
+  top: 410px;
+  right: 0;
+  left: 0;
+  width: 100%;
+  height: 320px;
+}
+
+.jaap-gesture-zone.is-horizontal span {
+  right: auto;
+  bottom: auto;
+  top: 112px;
+  left: 22px;
+  color: rgba(18, 25, 38, 0.58);
+  animation-name: swipeLeftHint;
+}
+
 .jaap-celebrate {
   position: absolute;
   inset: 0;
@@ -1571,5 +1953,18 @@ svg {
   50% {
     opacity: 1;
     transform: translateY(4px);
+  }
+}
+
+@keyframes swipeLeftHint {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateX(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateX(-5px);
   }
 }
